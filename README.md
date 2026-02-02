@@ -49,6 +49,66 @@ python -m app.main
 python app/main.py
 ```
 
+## Build Standalone Executable (.exe)
+
+You can build a standalone executable that doesn't require Python to be installed.
+
+### Windows
+
+```batch
+# Simply run the build script
+build.bat
+```
+
+Or manually:
+
+```batch
+# Activate virtual environment
+venv\Scripts\activate
+
+# Build executable
+pyinstaller slide_creator.spec --clean --noconfirm
+
+# The executable will be at: dist\SlideCreator.exe
+```
+
+### Linux / macOS
+
+```bash
+# Make script executable and run
+chmod +x build.sh
+./build.sh
+```
+
+Or manually:
+
+```bash
+# Activate virtual environment
+source venv/bin/activate
+
+# Build executable
+pyinstaller slide_creator.spec --clean --noconfirm
+
+# The executable will be at: dist/SlideCreator
+```
+
+### Running the Executable
+
+1. Navigate to the `dist` folder
+2. Copy `.env.example` to `.env` and add your `OPENAI_API_KEY`
+3. Run `SlideCreator.exe` (Windows) or `./SlideCreator` (Linux/Mac)
+
+```
+dist/
+├── SlideCreator.exe    # The executable
+├── .env                # Your configuration (create from .env.example)
+├── output/             # Generated presentations
+├── sessions/           # Saved sessions
+└── logs/               # LLM call logs
+```
+
+**Note**: The first run may take a moment to start as it extracts bundled files.
+
 ## Usage Flow
 
 ### Step A: Partner Review
