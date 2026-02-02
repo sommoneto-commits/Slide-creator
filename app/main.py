@@ -26,7 +26,7 @@ from app.models import (
     SlideSpec,
     Session,
 )
-from app.orchestrator import Orchestrator
+from app.config_manager import ConfigManager, get_config
 
 # Load environment variables
 load_dotenv()
@@ -50,12 +50,20 @@ class SlideCreatorCLI:
     """Interactive CLI for Slide Creator."""
 
     def __init__(self):
-        self.orchestrator = Orchestrator()
+        self.config = get_config()
+        self.orchestrator = None  # Initialize after API key check
         self.session: Optional[Session] = None
 
     def run(self):
         """Main entry point."""
         self._show_welcome()
+
+        # Check and prompt for API keys on startup
+        if not self._check_api_keys():
+            return
+
+        # Initialize orchestrator after API keys are set
+        self._init_orchestrator()
 
         while True:
             try:
@@ -67,6 +75,8 @@ class SlideCreatorCLI:
                     self._resume_session()
                 elif action == "list":
                     self._list_sessions()
+                elif action == "settings":
+                    self._settings_menu()
                 elif action == "exit":
                     self._exit()
                     break
@@ -75,6 +85,65 @@ class SlideCreatorCLI:
             except Exception as e:
                 console.print(f"\n[red]Error: {e}[/red]")
                 logger.exception("Error in main loop")
+
+    def _init_orchestrator(self):
+        """Initialize the orchestrator (call after API keys are configured)."""
+        from app.orchestrator import Orchestrator
+        self.orchestrator = Orchestrator()
+
+    def _check_api_keys(self) -> bool:
+        """Check if API keys are configured, prompt if not."""
+        if not self.config.is_openai_configured():
+            console.print("\n[yellow]OpenAI API Key not configured.[/yellow]")
+            console.print("[dim]You need an OpenAI API key to use Slide Creator.[/dim]\n")
+
+            if not self._prompt_openai_key():
+                console.print("[red]OpenAI API key is required. Exiting.[/red]")
+                return False
+
+        # Gamma is optional - just inform if not configured
+        if not self.config.is_gamma_configured():
+            console.print("\n[dim]Gamma API not configured. Using mock mode for visual generation.[/dim]")
+            console.print("[dim]You can configure it later in Settings.[/dim]\n")
+
+        return True
+
+    def _prompt_openai_key(self) -> bool:
+        """Prompt user to enter OpenAI API key."""
+        console.print("[bold]Enter your OpenAI API Key[/bold]")
+        console.print("[dim]Get your key from: https://platform.openai.com/api-keys[/dim]\n")
+
+        key = Prompt.ask("OpenAI API Key", password=True)
+
+        if not key:
+            return False
+
+        # Validate format
+        is_valid, message = self.config.validate_openai_key(key)
+        if not is_valid:
+            console.print(f"[yellow]Warning: {message}[/yellow]")
+            if not Confirm.ask("Save anyway?"):
+                return False
+
+        self.config.set_openai_api_key(key)
+        console.print("[green]OpenAI API key saved successfully![/green]")
+        return True
+
+    def _prompt_gamma_key(self) -> bool:
+        """Prompt user to enter Gamma API key."""
+        console.print("\n[bold]Enter your Gamma API Key (optional)[/bold]")
+        console.print("[dim]Leave empty to use mock mode[/dim]\n")
+
+        key = Prompt.ask("Gamma API Key (or press Enter to skip)", password=True, default="")
+
+        if not key:
+            self.config.set_gamma_use_mock(True)
+            console.print("[yellow]Using Gamma mock mode.[/yellow]")
+            return True
+
+        self.config.set_gamma_api_key(key)
+        console.print("[green]Gamma API key saved successfully![/green]")
+        return True
 
     def _show_welcome(self):
         """Display welcome message."""
@@ -95,17 +164,128 @@ Transform your storyline into a professional presentation through:
     def _show_main_menu(self) -> str:
         """Show main menu and get user choice."""
         console.print("\n[bold]Main Menu[/bold]")
-        console.print("  [cyan]new[/cyan]    - Start a new presentation")
-        console.print("  [cyan]resume[/cyan] - Resume an existing session")
-        console.print("  [cyan]list[/cyan]   - List all sessions")
-        console.print("  [cyan]exit[/cyan]   - Exit the application")
+        console.print("  [cyan]new[/cyan]      - Start a new presentation")
+        console.print("  [cyan]resume[/cyan]   - Resume an existing session")
+        console.print("  [cyan]list[/cyan]     - List all sessions")
+        console.print("  [cyan]settings[/cyan] - Configure API keys and settings")
+        console.print("  [cyan]exit[/cyan]     - Exit the application")
 
         choice = Prompt.ask(
             "\nWhat would you like to do?",
-            choices=["new", "resume", "list", "exit"],
+            choices=["new", "resume", "list", "settings", "exit"],
             default="new",
         )
         return choice
+
+    def _settings_menu(self):
+        """Display and manage settings."""
+        while True:
+            console.print("\n" + "=" * 60)
+            console.print("[bold cyan]Settings[/bold cyan]")
+            console.print("=" * 60 + "\n")
+
+            # Display current settings
+            settings = self.config.get_all_settings()
+
+            table = Table(title="Current Configuration", box=box.ROUNDED)
+            table.add_column("Setting", style="cyan")
+            table.add_column("Value", style="green")
+
+            table.add_row("OpenAI API Key", settings["openai_api_key"])
+            table.add_row("OpenAI Model", settings["openai_model"])
+            table.add_row("Gamma API Key", settings["gamma_api_key"])
+            table.add_row("Gamma Mock Mode", "Enabled" if settings["gamma_use_mock"] else "Disabled")
+            table.add_row("Output Directory", settings["output_dir"])
+
+            console.print(table)
+
+            # Menu options
+            console.print("\n[bold]Options:[/bold]")
+            console.print("  [cyan]1[/cyan] - Change OpenAI API Key")
+            console.print("  [cyan]2[/cyan] - Change OpenAI Model")
+            console.print("  [cyan]3[/cyan] - Change Gamma API Key")
+            console.print("  [cyan]4[/cyan] - Toggle Gamma Mock Mode")
+            console.print("  [cyan]5[/cyan] - Back to main menu")
+
+            choice = Prompt.ask("\nSelect option", choices=["1", "2", "3", "4", "5"], default="5")
+
+            if choice == "1":
+                self._change_openai_key()
+            elif choice == "2":
+                self._change_openai_model()
+            elif choice == "3":
+                self._change_gamma_key()
+            elif choice == "4":
+                self._toggle_gamma_mock()
+            elif choice == "5":
+                break
+
+            # Reinitialize orchestrator if API keys changed
+            if choice in ["1", "3"]:
+                self._init_orchestrator()
+
+    def _change_openai_key(self):
+        """Change OpenAI API key."""
+        console.print("\n[bold]Change OpenAI API Key[/bold]")
+        current = self.config.get_openai_api_key()
+        if current:
+            console.print(f"[dim]Current: {self.config._mask_key(current)}[/dim]")
+
+        key = Prompt.ask("New OpenAI API Key (or press Enter to cancel)", password=True, default="")
+
+        if key:
+            is_valid, message = self.config.validate_openai_key(key)
+            if not is_valid:
+                console.print(f"[yellow]Warning: {message}[/yellow]")
+                if not Confirm.ask("Save anyway?"):
+                    return
+
+            self.config.set_openai_api_key(key)
+            console.print("[green]OpenAI API key updated![/green]")
+
+    def _change_openai_model(self):
+        """Change OpenAI model."""
+        console.print("\n[bold]Change OpenAI Model[/bold]")
+        current = self.config.get_openai_model()
+        console.print(f"[dim]Current: {current}[/dim]")
+
+        console.print("\n[dim]Available models: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo[/dim]")
+        model = Prompt.ask("New model", default=current)
+
+        if model and model != current:
+            self.config.set_openai_model(model)
+            console.print(f"[green]Model changed to: {model}[/green]")
+
+    def _change_gamma_key(self):
+        """Change Gamma API key."""
+        console.print("\n[bold]Change Gamma API Key[/bold]")
+        current = self.config.get_gamma_api_key()
+        if current:
+            console.print(f"[dim]Current: {self.config._mask_key(current)}[/dim]")
+
+        key = Prompt.ask("New Gamma API Key (or press Enter to use mock mode)", password=True, default="")
+
+        if key:
+            self.config.set_gamma_api_key(key)
+            self.config.set_gamma_use_mock(False)
+            console.print("[green]Gamma API key updated! Mock mode disabled.[/green]")
+        else:
+            self.config.set_gamma_use_mock(True)
+            console.print("[yellow]Using Gamma mock mode.[/yellow]")
+
+    def _toggle_gamma_mock(self):
+        """Toggle Gamma mock mode."""
+        current = self.config.get_gamma_use_mock()
+        new_value = not current
+
+        if not new_value and not self.config.get_gamma_api_key():
+            console.print("[red]Cannot disable mock mode without a Gamma API key.[/red]")
+            console.print("[dim]Please set a Gamma API key first.[/dim]")
+            return
+
+        self.config.set_gamma_use_mock(new_value)
+        status = "enabled" if new_value else "disabled"
+        console.print(f"[green]Gamma mock mode {status}.[/green]")
 
     def _new_session(self):
         """Start a new session."""
