@@ -1,0 +1,185 @@
+{
+  "version": "1.0.0",
+  "frameworks": [
+    {
+      "id": "pyramid_executive_summary",
+      "name": "Pyramid / Executive Summary",
+      "description": "Top-down structure starting with the main conclusion, followed by supporting arguments and evidence",
+      "when_to_use": "Opening slides, key recommendations, executive summaries, when audience needs the answer first",
+      "layout_hint": "Large headline with key message, 3-4 supporting points below, optional detail bullets",
+      "do": ["Lead with the answer", "Use MECE supporting points", "Keep evidence concise"],
+      "dont": ["Bury the conclusion", "Use more than 4 supporting arguments", "Include raw data without synthesis"]
+    },
+    {
+      "id": "scr",
+      "name": "Situation–Complication–Resolution",
+      "description": "Narrative structure: establish context, introduce tension, propose solution",
+      "when_to_use": "Problem statements, change management, persuasive arguments, strategy proposals",
+      "layout_hint": "Three distinct sections (columns or rows), visual flow from left to right",
+      "do": ["Make complication specific and urgent", "Resolution must directly address complication", "Use concrete evidence"],
+      "dont": ["Make situation too long", "Have multiple complications", "Propose vague resolutions"]
+    },
+    {
+      "id": "2x2_matrix",
+      "name": "2x2 Matrix",
+      "description": "Four-quadrant framework for comparing options along two dimensions",
+      "when_to_use": "Strategic prioritization, portfolio analysis, decision frameworks, segmentation",
+      "layout_hint": "Equal quadrants with clear axis labels, items plotted with icons or text",
+      "do": ["Choose orthogonal, meaningful axes", "Label quadrants clearly", "Highlight the recommended quadrant"],
+      "dont": ["Use correlated axes", "Overcrowd quadrants", "Leave axes unlabeled"]
+    },
+    {
+      "id": "mece_issue_tree",
+      "name": "MECE Issue Tree",
+      "description": "Mutually exclusive, collectively exhaustive breakdown of a problem or topic",
+      "when_to_use": "Problem decomposition, scope definition, root cause analysis, structuring complex topics",
+      "layout_hint": "Hierarchical tree from left to right, branches at each level",
+      "do": ["Ensure no overlaps", "Cover all possibilities", "Limit to 3-4 branches per node"],
+      "dont": ["Mix levels of abstraction", "Create redundant branches", "Go deeper than 3 levels on one slide"]
+    },
+    {
+      "id": "value_chain",
+      "name": "Value Chain",
+      "description": "Sequential process showing how value is created from inputs to outputs",
+      "when_to_use": "Operations analysis, competitive advantage, process improvement, margin analysis",
+      "layout_hint": "Horizontal chain with arrows, primary activities in main flow, support activities above/below",
+      "do": ["Show clear flow direction", "Highlight value-add steps", "Indicate where differentiation occurs"],
+      "dont": ["Include too many steps", "Mix strategic and operational detail", "Forget support activities"]
+    },
+    {
+      "id": "customer_journey",
+      "name": "Customer Journey",
+      "description": "Visualization of customer experience across touchpoints and stages",
+      "when_to_use": "CX improvement, service design, marketing strategy, pain point analysis",
+      "layout_hint": "Horizontal timeline with stages, touchpoints mapped, emotion curve optional",
+      "do": ["Include customer emotions/pain points", "Show key moments of truth", "Map to business actions"],
+      "dont": ["Make stages too granular", "Ignore negative experiences", "Forget the customer perspective"]
+    },
+    {
+      "id": "funnel",
+      "name": "Funnel",
+      "description": "Conversion visualization showing progressive narrowing through stages",
+      "when_to_use": "Sales pipeline, marketing conversion, process efficiency, drop-off analysis",
+      "layout_hint": "Inverted trapezoid shape, percentages at each stage, conversion rates between stages",
+      "do": ["Show conversion rates", "Highlight biggest drop-offs", "Include absolute numbers if relevant"],
+      "dont": ["Use too many stages", "Ignore what happens to non-converters", "Present without benchmarks"]
+    },
+    {
+      "id": "timeline_roadmap",
+      "name": "Timeline / Roadmap",
+      "description": "Temporal visualization of milestones, phases, or planned activities",
+      "when_to_use": "Project planning, strategic initiatives, historical context, implementation plans",
+      "layout_hint": "Horizontal timeline with milestones, phases in swim lanes if multiple workstreams",
+      "do": ["Mark key milestones clearly", "Show dependencies if relevant", "Indicate current position"],
+      "dont": ["Include too much detail", "Use inconsistent time scales", "Forget to show progress status"]
+    },
+    {
+      "id": "before_after_bridge",
+      "name": "Before-After-Bridge",
+      "description": "Transformation narrative: current state, future state, and how to get there",
+      "when_to_use": "Change proposals, transformation cases, improvement initiatives, sales pitches",
+      "layout_hint": "Three columns or sections: Before (pain), After (gain), Bridge (solution)",
+      "do": ["Make contrast stark", "Be specific about benefits", "Show credible path forward"],
+      "dont": ["Exaggerate either state", "Make bridge too vague", "Forget to quantify impact"]
+    },
+    {
+      "id": "pros_cons_tradeoff",
+      "name": "Pros/Cons / Trade-off",
+      "description": "Balanced comparison of advantages and disadvantages or competing options",
+      "when_to_use": "Decision support, option evaluation, risk assessment, stakeholder alignment",
+      "layout_hint": "Two columns (pros/cons) or comparison table with options as columns",
+      "do": ["Be balanced and honest", "Prioritize most important factors", "Include mitigation for cons"],
+      "dont": ["Cherry-pick to favor one option", "List trivial items", "Ignore key stakeholder concerns"]
+    },
+    {
+      "id": "benchmark_table",
+      "name": "Benchmark Table",
+      "description": "Comparative analysis against competitors, standards, or best practices",
+      "when_to_use": "Competitive analysis, performance gaps, best practice adoption, market positioning",
+      "layout_hint": "Table with entities as columns, criteria as rows, visual indicators for performance",
+      "do": ["Choose meaningful criteria", "Use consistent scoring", "Highlight key differentiators"],
+      "dont": ["Include too many comparators", "Use biased criteria", "Present without source/date"]
+    },
+    {
+      "id": "waterfall_gantt",
+      "name": "Waterfall / Gantt",
+      "description": "Project schedule visualization showing tasks, durations, and dependencies",
+      "when_to_use": "Project planning, resource allocation, timeline communication, progress tracking",
+      "layout_hint": "Tasks as rows, time as horizontal axis, bars showing duration, dependencies as arrows",
+      "do": ["Show critical path", "Mark milestones", "Indicate current status"],
+      "dont": ["Include too many tasks", "Ignore dependencies", "Use at wrong level of detail"]
+    },
+    {
+      "id": "kpi_scorecard",
+      "name": "KPI Scorecard",
+      "description": "Dashboard view of key performance indicators with status and trends",
+      "when_to_use": "Performance reviews, executive updates, operational monitoring, goal tracking",
+      "layout_hint": "Grid of KPI cards with metric, target, actual, trend indicator, RAG status",
+      "do": ["Focus on most critical metrics", "Show trends and targets", "Use consistent RAG logic"],
+      "dont": ["Include too many KPIs", "Mix strategic and operational metrics", "Present without context"]
+    },
+    {
+      "id": "heatmap",
+      "name": "Heatmap",
+      "description": "Color-coded matrix showing intensity or performance across two dimensions",
+      "when_to_use": "Risk assessment, performance comparison, opportunity mapping, resource allocation",
+      "layout_hint": "Grid with color intensity indicating values, clear legend, labeled axes",
+      "do": ["Use intuitive color scale", "Include legend", "Highlight key cells"],
+      "dont": ["Use too many colors", "Leave cells unlabeled", "Forget to explain the scale"]
+    },
+    {
+      "id": "porter_5_forces",
+      "name": "Porter 5 Forces",
+      "description": "Industry competitive analysis framework: rivalry, suppliers, buyers, substitutes, new entrants",
+      "when_to_use": "Industry analysis, competitive strategy, market entry decisions, strategic planning",
+      "layout_hint": "Pentagon or cross diagram with central rivalry, four forces around",
+      "do": ["Be specific to the industry", "Rate each force strength", "Draw strategic implications"],
+      "dont": ["Be too generic", "Ignore industry dynamics", "Present without recommendations"]
+    },
+    {
+      "id": "swot",
+      "name": "SWOT Analysis",
+      "description": "Four-quadrant analysis of Strengths, Weaknesses, Opportunities, Threats",
+      "when_to_use": "Strategic planning, situation assessment, when explicitly requested by stakeholders",
+      "layout_hint": "2x2 grid with S/W on top, O/T on bottom; internal vs external distinction",
+      "do": ["Be specific and actionable", "Prioritize items", "Link to strategy implications"],
+      "dont": ["Use generic items", "List too many points", "Present without action plan"]
+    },
+    {
+      "id": "logic_model",
+      "name": "Logic Model",
+      "description": "Causal chain: Inputs → Activities → Outputs → Outcomes → Impact",
+      "when_to_use": "Program design, impact measurement, grant proposals, theory of change",
+      "layout_hint": "Horizontal flow with boxes for each stage, arrows showing causation",
+      "do": ["Show clear causal logic", "Include measurable indicators", "Distinguish outputs from outcomes"],
+      "dont": ["Confuse outputs with outcomes", "Make chain too complex", "Ignore external factors"]
+    },
+    {
+      "id": "single_message",
+      "name": "Single Key Message",
+      "description": "Minimalist slide with one powerful statement or insight",
+      "when_to_use": "Transitions, emphasis points, memorable takeaways, chapter breaks",
+      "layout_hint": "Large centered text, minimal supporting elements, strong typography",
+      "do": ["Make the message memorable", "Use strong verbs", "Support with one visual if needed"],
+      "dont": ["Add clutter", "Use multiple messages", "Bury in bullet points"]
+    },
+    {
+      "id": "data_chart",
+      "name": "Data Visualization",
+      "description": "Chart-focused slide for presenting quantitative insights",
+      "when_to_use": "Trends, comparisons, distributions, when data tells the story",
+      "layout_hint": "Chart as hero element, clear title stating the insight, minimal supporting text",
+      "do": ["Title with the insight, not description", "Choose right chart type", "Annotate key points"],
+      "dont": ["Use 3D charts", "Overload with data", "Forget axis labels and sources"]
+    },
+    {
+      "id": "agenda_toc",
+      "name": "Agenda / Table of Contents",
+      "description": "Overview slide showing presentation structure and sections",
+      "when_to_use": "Opening after title, long presentations, navigation aid",
+      "layout_hint": "Numbered list or visual map of sections, timing if relevant",
+      "do": ["Keep sections to 3-5", "Use action-oriented titles", "Show where we are in the flow"],
+      "dont": ["Make too detailed", "Use generic titles", "Update without maintaining consistency"]
+    }
+  ]
+}
