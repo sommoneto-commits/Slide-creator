@@ -1,0 +1,1610 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide Creator - AI Presentation Generator</title>
+
+    <!-- PptxGenJS for PPTX generation -->
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@3.12.0/dist/pptxgen.bundle.js"></script>
+
+    <!-- Marked for Markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --primary-dark: #1557b0;
+            --secondary: #34a853;
+            --warning: #fbbc05;
+            --danger: #ea4335;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --text: #202124;
+            --text-light: #5f6368;
+            --border: #dadce0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        header p {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* Main Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h2 {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        /* Steps Indicator */
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .steps::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--border);
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .step.active .step-number {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step.completed .step-number {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.75rem;
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        /* Review Output */
+        .review-section {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 4px;
+        }
+
+        .review-section h4 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+        }
+
+        .review-section.strengths { border-left: 4px solid var(--secondary); }
+        .review-section.gaps { border-left: 4px solid var(--warning); }
+        .review-section.risks { border-left: 4px solid var(--danger); }
+        .review-section.recommendations { border-left: 4px solid var(--primary); }
+
+        .review-section ul {
+            margin-left: 1.25rem;
+        }
+
+        .review-section li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Slide List */
+        .slide-item {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            background: white;
+        }
+
+        .slide-item.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+        }
+
+        .slide-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .slide-id {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .slide-title {
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .slide-message {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        /* Framework Badge */
+        .framework-badge {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid var(--primary);
+        }
+
+        /* Loading */
+        .loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 200;
+            transition: right 0.3s;
+            overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            padding: 1rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-body {
+            padding: 1.5rem;
+        }
+
+        .settings-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+        }
+
+        .settings-overlay.open {
+            display: block;
+        }
+
+        /* API Status */
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .api-status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .api-status-dot.connected { background: var(--secondary); }
+        .api-status-dot.disconnected { background: var(--danger); }
+
+        /* Toast Notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 300;
+        }
+
+        .toast {
+            background: var(--text);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            margin-top: 0.5rem;
+            animation: slideIn 0.3s;
+            max-width: 350px;
+        }
+
+        .toast.success { background: var(--secondary); }
+        .toast.error { background: var(--danger); }
+        .toast.warning { background: var(--warning); color: var(--text); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab:hover {
+            color: var(--primary);
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Collapsible */
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s;
+        }
+
+        .collapsible-content.open {
+            max-height: 2000px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .steps {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .steps::before {
+                display: none;
+            }
+
+            .settings-panel {
+                width: 100%;
+                right: -100%;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+        }
+
+        /* Config Required Screen */
+        .config-required {
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .config-required h2 {
+            margin-bottom: 1rem;
+        }
+
+        .config-required p {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Icon styles */
+        .icon {
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>🎯 Slide Creator</h1>
+                <p>AI-powered presentation generator</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <div class="api-status">
+                    <span class="api-status-dot" id="apiStatusDot"></span>
+                    <span id="apiStatusText">Not configured</span>
+                </div>
+                <button class="btn btn-secondary" onclick="openSettings()" style="background: rgba(255,255,255,0.2); border: none; color: white;">
+                    ⚙️ Settings
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Steps Indicator -->
+        <div class="steps" id="stepsIndicator">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Storyline</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Partner Review</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Outline</div>
+            </div>
+            <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Slide Design</div>
+            </div>
+            <div class="step" data-step="5">
+                <div class="step-number">5</div>
+                <div class="step-label">Export</div>
+            </div>
+        </div>
+
+        <!-- Config Required Screen -->
+        <div class="card config-required" id="configRequired">
+            <h2>🔑 API Key Required</h2>
+            <p>Please configure your OpenAI API key to start creating presentations.</p>
+            <button class="btn btn-primary" onclick="openSettings()">Configure API Key</button>
+        </div>
+
+        <!-- Step 1: Storyline Input -->
+        <div class="card" id="step1" style="display: none;">
+            <div class="card-header">
+                <h2>📝 Step 1: Enter Your Storyline</h2>
+            </div>
+
+            <div class="form-group">
+                <label for="storyline">Storyline *</label>
+                <textarea id="storyline" placeholder="Enter your presentation storyline here. Describe the key messages, arguments, and conclusions you want to convey..."></textarea>
+            </div>
+
+            <details style="margin-bottom: 1rem;">
+                <summary style="cursor: pointer; color: var(--primary); font-weight: 500;">Optional Parameters</summary>
+                <div style="padding-top: 1rem;">
+                    <div class="form-group">
+                        <label for="targetAudience">Target Audience</label>
+                        <input type="text" id="targetAudience" placeholder="e.g., Board of Directors, Sales Team, Investors">
+                    </div>
+                    <div class="form-group">
+                        <label for="duration">Duration (minutes)</label>
+                        <input type="number" id="duration" placeholder="30" min="5" max="120">
+                    </div>
+                    <div class="form-group">
+                        <label for="tone">Tone of Voice</label>
+                        <select id="tone">
+                            <option value="">Select...</option>
+                            <option value="formal">Formal / Executive</option>
+                            <option value="conversational">Conversational</option>
+                            <option value="persuasive">Persuasive</option>
+                            <option value="educational">Educational</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="brandConstraints">Brand Constraints</label>
+                        <input type="text" id="brandConstraints" placeholder="e.g., Use blue theme, avoid competitor mentions">
+                    </div>
+                </div>
+            </details>
+
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="startPartnerReview()">
+                    Start Partner Review →
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Partner Review -->
+        <div class="card" id="step2" style="display: none;">
+            <div class="card-header">
+                <h2>🎯 Step 2: Partner Review</h2>
+                <span class="framework-badge">Iteration <span id="reviewIteration">1</span>/3</span>
+            </div>
+
+            <div class="loading" id="reviewLoading">
+                <div class="spinner"></div>
+                <p>Generating partner review...</p>
+            </div>
+
+            <div id="reviewContent" style="display: none;">
+                <div class="review-section">
+                    <h4>Overall Assessment</h4>
+                    <p id="reviewOverall"></p>
+                </div>
+
+                <div class="review-section strengths">
+                    <h4>✅ Strengths</h4>
+                    <ul id="reviewStrengths"></ul>
+                </div>
+
+                <div class="review-section gaps">
+                    <h4>⚠️ Gaps</h4>
+                    <ul id="reviewGaps"></ul>
+                </div>
+
+                <div class="review-section risks">
+                    <h4>🚨 Risks</h4>
+                    <ul id="reviewRisks"></ul>
+                </div>
+
+                <div class="review-section recommendations">
+                    <h4>💡 Recommendations</h4>
+                    <ul id="reviewRecommendations"></ul>
+                </div>
+
+                <details id="reviewQuestionsSection">
+                    <summary style="cursor: pointer; color: var(--primary); font-weight: 500;">Clarifying Questions</summary>
+                    <ul id="reviewQuestions" style="padding: 1rem;"></ul>
+                </details>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="approveReview()">
+                        ✓ Approve & Continue
+                    </button>
+                    <button class="btn btn-secondary" onclick="editStoryline()">
+                        ✏️ Edit Storyline
+                    </button>
+                    <button class="btn btn-secondary" onclick="retryReview()">
+                        🔄 Regenerate Review
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Slide Outline -->
+        <div class="card" id="step3" style="display: none;">
+            <div class="card-header">
+                <h2>📑 Step 3: Slide Outline</h2>
+                <span class="framework-badge">Iteration <span id="outlineIteration">1</span>/5</span>
+            </div>
+
+            <div class="loading" id="outlineLoading">
+                <div class="spinner"></div>
+                <p>Generating slide outline...</p>
+            </div>
+
+            <div id="outlineContent" style="display: none;">
+                <div class="form-group">
+                    <label>Deck Title</label>
+                    <input type="text" id="deckTitle" readonly style="font-weight: 600; font-size: 1.1rem;">
+                </div>
+
+                <label>Slides (<span id="slideCount">0</span>)</label>
+                <div id="slidesList"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="approveOutline()">
+                        ✓ Approve & Continue
+                    </button>
+                    <button class="btn btn-secondary" onclick="reviseOutline()">
+                        🔄 Revise Outline
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Slide Design -->
+        <div class="card" id="step4" style="display: none;">
+            <div class="card-header">
+                <h2>🎨 Step 4: Slide Design</h2>
+                <span id="slideProgress">Slide 1 of 5</span>
+            </div>
+
+            <div class="loading" id="specLoading">
+                <div class="spinner"></div>
+                <p>Generating slide specification...</p>
+            </div>
+
+            <div id="specContent" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label>Slide Title</label>
+                        <input type="text" id="specTitle" readonly>
+                    </div>
+                    <div>
+                        <label>Framework</label>
+                        <input type="text" id="specFramework" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Rationale</label>
+                    <p id="specRationale" style="padding: 0.75rem; background: var(--bg); border-radius: 4px;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label>Headline</label>
+                    <input type="text" id="specHeadline" readonly style="font-weight: 600;">
+                </div>
+
+                <div class="form-group">
+                    <label>Body Content</label>
+                    <ul id="specBody" style="padding: 0.75rem; background: var(--bg); border-radius: 4px; list-style-position: inside;"></ul>
+                </div>
+
+                <div id="specSections"></div>
+
+                <div class="btn-group">
+                    <button class="btn btn-success" onclick="approveSpec()">
+                        ✓ Approve Slide
+                    </button>
+                    <button class="btn btn-secondary" onclick="reviseSpec()">
+                        🔄 Revise Design
+                    </button>
+                    <button class="btn btn-secondary" onclick="skipSlide()">
+                        ⏭️ Skip Slide
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 5: Export -->
+        <div class="card" id="step5" style="display: none;">
+            <div class="card-header">
+                <h2>📥 Step 5: Export Presentation</h2>
+            </div>
+
+            <div id="exportSummary">
+                <p style="margin-bottom: 1rem;">Your presentation is ready to export!</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center; padding: 1rem; background: var(--bg); border-radius: 4px;">
+                        <div style="font-size: 2rem; font-weight: 600; color: var(--primary);" id="totalSlides">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-light);">Total Slides</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: var(--bg); border-radius: 4px;">
+                        <div style="font-size: 2rem; font-weight: 600; color: var(--secondary);" id="approvedSlides">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-light);">Approved</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="authorName">Author Name</label>
+                    <input type="text" id="authorName" value="Slide Creator" placeholder="Enter author name">
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="exportPPTX()" style="font-size: 1rem; padding: 1rem 2rem;">
+                        📥 Download PPTX
+                    </button>
+                    <button class="btn btn-secondary" onclick="startOver()">
+                        🔄 Start New Presentation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-overlay" id="settingsOverlay" onclick="closeSettings()"></div>
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h3>⚙️ Settings</h3>
+            <button onclick="closeSettings()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div class="settings-body">
+            <div class="form-group">
+                <label for="openaiKey">OpenAI API Key *</label>
+                <input type="password" id="openaiKey" placeholder="sk-...">
+                <small style="color: var(--text-light);">Get your key from <a href="https://platform.openai.com/api-keys" target="_blank">platform.openai.com</a></small>
+            </div>
+
+            <div class="form-group">
+                <label for="openaiModel">OpenAI Model</label>
+                <select id="openaiModel">
+                    <option value="gpt-4o">GPT-4o (Recommended)</option>
+                    <option value="gpt-4o-mini">GPT-4o Mini (Faster)</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Cheapest)</option>
+                </select>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+
+            <div class="form-group">
+                <label for="gammaKey">Gamma API Key (Optional)</label>
+                <input type="password" id="gammaKey" placeholder="Leave empty for mock mode">
+                <small style="color: var(--text-light);">Leave empty to use simulated visual generation</small>
+            </div>
+
+            <div class="btn-group" style="margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="saveSettings()" style="width: 100%;">
+                    💾 Save Settings
+                </button>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: var(--bg); border-radius: 4px;">
+                <h4 style="margin-bottom: 0.5rem;">About</h4>
+                <p style="font-size: 0.875rem; color: var(--text-light);">
+                    Slide Creator transforms your storyline into professional presentations using AI and consulting best practices.
+                </p>
+                <p style="font-size: 0.75rem; color: var(--text-light); margin-top: 0.5rem;">
+                    Your API keys are stored locally in your browser and never sent to any server except OpenAI.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============ STATE MANAGEMENT ============
+        const state = {
+            currentStep: 1,
+            storyline: '',
+            targetAudience: '',
+            duration: null,
+            tone: '',
+            brandConstraints: '',
+            review: null,
+            reviewIteration: 0,
+            outline: null,
+            outlineIteration: 0,
+            slideSpecs: [],
+            currentSlideIndex: 0,
+            specIterations: {}
+        };
+
+        // ============ FRAMEWORKS ============
+        const FRAMEWORKS = [
+            { id: 'pyramid_executive_summary', name: 'Pyramid / Executive Summary', when: 'Key recommendations, openings' },
+            { id: 'scr', name: 'Situation-Complication-Resolution', when: 'Problem statements, proposals' },
+            { id: '2x2_matrix', name: '2x2 Matrix', when: 'Prioritization, segmentation' },
+            { id: 'mece_issue_tree', name: 'MECE Issue Tree', when: 'Problem decomposition' },
+            { id: 'value_chain', name: 'Value Chain', when: 'Operations, competitive advantage' },
+            { id: 'customer_journey', name: 'Customer Journey', when: 'CX improvement, service design' },
+            { id: 'funnel', name: 'Funnel', when: 'Sales pipeline, conversion' },
+            { id: 'timeline_roadmap', name: 'Timeline / Roadmap', when: 'Project planning, milestones' },
+            { id: 'before_after_bridge', name: 'Before-After-Bridge', when: 'Transformation cases' },
+            { id: 'pros_cons_tradeoff', name: 'Pros/Cons', when: 'Decision support' },
+            { id: 'benchmark_table', name: 'Benchmark Table', when: 'Competitive analysis' },
+            { id: 'kpi_scorecard', name: 'KPI Scorecard', when: 'Performance dashboards' },
+            { id: 'single_message', name: 'Single Key Message', when: 'Transitions, emphasis' },
+            { id: 'data_chart', name: 'Data Visualization', when: 'Quantitative insights' },
+            { id: 'agenda_toc', name: 'Agenda / TOC', when: 'Navigation, structure' }
+        ];
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            updateAPIStatus();
+            checkConfiguration();
+        });
+
+        function loadSettings() {
+            const savedKey = localStorage.getItem('openai_api_key');
+            const savedModel = localStorage.getItem('openai_model') || 'gpt-4o';
+            const savedGammaKey = localStorage.getItem('gamma_api_key');
+
+            if (savedKey) document.getElementById('openaiKey').value = savedKey;
+            document.getElementById('openaiModel').value = savedModel;
+            if (savedGammaKey) document.getElementById('gammaKey').value = savedGammaKey;
+        }
+
+        function saveSettings() {
+            const apiKey = document.getElementById('openaiKey').value.trim();
+            const model = document.getElementById('openaiModel').value;
+            const gammaKey = document.getElementById('gammaKey').value.trim();
+
+            if (!apiKey) {
+                showToast('Please enter your OpenAI API key', 'error');
+                return;
+            }
+
+            if (!apiKey.startsWith('sk-')) {
+                showToast('OpenAI API key should start with "sk-"', 'warning');
+            }
+
+            localStorage.setItem('openai_api_key', apiKey);
+            localStorage.setItem('openai_model', model);
+            if (gammaKey) {
+                localStorage.setItem('gamma_api_key', gammaKey);
+            } else {
+                localStorage.removeItem('gamma_api_key');
+            }
+
+            updateAPIStatus();
+            checkConfiguration();
+            closeSettings();
+            showToast('Settings saved successfully!', 'success');
+        }
+
+        function updateAPIStatus() {
+            const apiKey = localStorage.getItem('openai_api_key');
+            const dot = document.getElementById('apiStatusDot');
+            const text = document.getElementById('apiStatusText');
+
+            if (apiKey) {
+                dot.className = 'api-status-dot connected';
+                text.textContent = 'Connected';
+            } else {
+                dot.className = 'api-status-dot disconnected';
+                text.textContent = 'Not configured';
+            }
+        }
+
+        function checkConfiguration() {
+            const apiKey = localStorage.getItem('openai_api_key');
+            const configRequired = document.getElementById('configRequired');
+            const step1 = document.getElementById('step1');
+
+            if (apiKey) {
+                configRequired.style.display = 'none';
+                step1.style.display = 'block';
+            } else {
+                configRequired.style.display = 'block';
+                step1.style.display = 'none';
+            }
+        }
+
+        // ============ SETTINGS PANEL ============
+        function openSettings() {
+            document.getElementById('settingsPanel').classList.add('open');
+            document.getElementById('settingsOverlay').classList.add('open');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsPanel').classList.remove('open');
+            document.getElementById('settingsOverlay').classList.remove('open');
+        }
+
+        // ============ STEP NAVIGATION ============
+        function setStep(stepNumber) {
+            state.currentStep = stepNumber;
+
+            // Update step indicators
+            document.querySelectorAll('.step').forEach((step, index) => {
+                step.classList.remove('active', 'completed');
+                if (index + 1 < stepNumber) {
+                    step.classList.add('completed');
+                } else if (index + 1 === stepNumber) {
+                    step.classList.add('active');
+                }
+            });
+
+            // Show/hide step content
+            for (let i = 1; i <= 5; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                if (stepEl) {
+                    stepEl.style.display = i === stepNumber ? 'block' : 'none';
+                }
+            }
+        }
+
+        // ============ OPENAI API ============
+        async function callOpenAI(systemPrompt, userPrompt, jsonSchema = null) {
+            const apiKey = localStorage.getItem('openai_api_key');
+            const model = localStorage.getItem('openai_model') || 'gpt-4o';
+
+            if (!apiKey) {
+                throw new Error('OpenAI API key not configured');
+            }
+
+            const messages = [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ];
+
+            const body = {
+                model: model,
+                messages: messages,
+                temperature: 0.5,
+                max_tokens: 4000
+            };
+
+            if (jsonSchema) {
+                body.response_format = { type: 'json_object' };
+            }
+
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error?.message || 'API request failed');
+            }
+
+            const data = await response.json();
+            let content = data.choices[0].message.content;
+
+            // Parse JSON if expected
+            if (jsonSchema) {
+                try {
+                    // Handle markdown code blocks
+                    if (content.includes('```json')) {
+                        content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+                    } else if (content.includes('```')) {
+                        content = content.replace(/```\n?/g, '');
+                    }
+                    return JSON.parse(content);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    throw new Error('Failed to parse AI response');
+                }
+            }
+
+            return content;
+        }
+
+        // ============ STEP 1: STORYLINE ============
+        async function startPartnerReview() {
+            const storyline = document.getElementById('storyline').value.trim();
+
+            if (!storyline) {
+                showToast('Please enter a storyline', 'error');
+                return;
+            }
+
+            state.storyline = storyline;
+            state.targetAudience = document.getElementById('targetAudience').value.trim();
+            state.duration = document.getElementById('duration').value;
+            state.tone = document.getElementById('tone').value;
+            state.brandConstraints = document.getElementById('brandConstraints').value.trim();
+
+            state.reviewIteration = 0;
+            setStep(2);
+            await generatePartnerReview();
+        }
+
+        // ============ STEP 2: PARTNER REVIEW ============
+        async function generatePartnerReview() {
+            const loading = document.getElementById('reviewLoading');
+            const content = document.getElementById('reviewContent');
+
+            loading.classList.add('active');
+            content.style.display = 'none';
+
+            state.reviewIteration++;
+            document.getElementById('reviewIteration').textContent = state.reviewIteration;
+
+            const systemPrompt = `You are a Senior Partner at a top-tier strategy consulting firm (McKinsey, BCG, Bain caliber).
+You review presentation storylines with a critical, constructive eye.
+
+Your approach:
+- Top-down thinking: Start with the answer, then support it
+- Pyramid Principle: Group ideas logically, MECE where possible
+- Pragmatic: Focus on what matters to the audience
+- Incisive: Cut through fluff, identify the core message
+
+You MUST respond with valid JSON matching this schema:
+{
+    "overall_assessment": "string (2-3 sentences)",
+    "strengths": ["array of strings"],
+    "gaps": ["array of strings"],
+    "risks": ["array of strings"],
+    "recommendations": ["array of strings"],
+    "clarifying_questions": ["array of strings"]
+}`;
+
+            let userPrompt = `Please review the following storyline:\n\n${state.storyline}`;
+
+            if (state.targetAudience) userPrompt += `\n\nTarget Audience: ${state.targetAudience}`;
+            if (state.duration) userPrompt += `\nDuration: ${state.duration} minutes`;
+            if (state.tone) userPrompt += `\nTone: ${state.tone}`;
+            if (state.brandConstraints) userPrompt += `\nBrand Constraints: ${state.brandConstraints}`;
+
+            try {
+                state.review = await callOpenAI(systemPrompt, userPrompt, true);
+                displayReview(state.review);
+            } catch (error) {
+                showToast('Error generating review: ' + error.message, 'error');
+                loading.classList.remove('active');
+            }
+        }
+
+        function displayReview(review) {
+            document.getElementById('reviewOverall').textContent = review.overall_assessment || '';
+
+            const lists = {
+                'reviewStrengths': review.strengths || [],
+                'reviewGaps': review.gaps || [],
+                'reviewRisks': review.risks || [],
+                'reviewRecommendations': review.recommendations || [],
+                'reviewQuestions': review.clarifying_questions || []
+            };
+
+            for (const [id, items] of Object.entries(lists)) {
+                const ul = document.getElementById(id);
+                ul.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+            }
+
+            document.getElementById('reviewLoading').classList.remove('active');
+            document.getElementById('reviewContent').style.display = 'block';
+        }
+
+        function approveReview() {
+            setStep(3);
+            generateSlideOutline();
+        }
+
+        function editStoryline() {
+            setStep(1);
+            showToast('Edit your storyline and submit again', 'info');
+        }
+
+        async function retryReview() {
+            if (state.reviewIteration >= 3) {
+                showToast('Maximum iterations reached', 'warning');
+                return;
+            }
+            await generatePartnerReview();
+        }
+
+        // ============ STEP 3: SLIDE OUTLINE ============
+        async function generateSlideOutline() {
+            const loading = document.getElementById('outlineLoading');
+            const content = document.getElementById('outlineContent');
+
+            loading.classList.add('active');
+            content.style.display = 'none';
+
+            state.outlineIteration++;
+            document.getElementById('outlineIteration').textContent = state.outlineIteration;
+
+            const frameworksList = FRAMEWORKS.map(f => `- ${f.id}: ${f.name} (${f.when})`).join('\n');
+
+            const systemPrompt = `You are a presentation architect at a top-tier consulting firm.
+Transform the storyline into a well-structured slide deck outline.
+
+Principles:
+- Each slide should have ONE clear message
+- Slides should flow logically
+- Use "answer first" approach
+
+Available frameworks for reference:
+${frameworksList}
+
+You MUST respond with valid JSON:
+{
+    "deck_title": "string",
+    "slides": [
+        {
+            "slide_id": "S01",
+            "title": "string (insight-driven)",
+            "objective": "string",
+            "key_message": "string",
+            "bullets": ["array of 3-5 strings"],
+            "suggested_framework": "framework_id"
+        }
+    ]
+}`;
+
+            let userPrompt = `Create a slide deck outline for:\n\n${state.storyline}`;
+
+            if (state.review) {
+                userPrompt += `\n\nKey recommendations from review:\n`;
+                userPrompt += (state.review.recommendations || []).map(r => `- ${r}`).join('\n');
+            }
+
+            if (state.duration) {
+                userPrompt += `\n\nTarget duration: ${state.duration} minutes (plan slide count accordingly)`;
+            }
+
+            try {
+                state.outline = await callOpenAI(systemPrompt, userPrompt, true);
+                displayOutline(state.outline);
+            } catch (error) {
+                showToast('Error generating outline: ' + error.message, 'error');
+                loading.classList.remove('active');
+            }
+        }
+
+        function displayOutline(outline) {
+            document.getElementById('deckTitle').value = outline.deck_title || 'Untitled Presentation';
+
+            const slides = outline.slides || [];
+            document.getElementById('slideCount').textContent = slides.length;
+
+            const slidesList = document.getElementById('slidesList');
+            slidesList.innerHTML = slides.map((slide, index) => `
+                <div class="slide-item" data-index="${index}">
+                    <div class="slide-item-header">
+                        <span class="slide-id">${slide.slide_id}</span>
+                        <span class="framework-badge">${slide.suggested_framework || 'auto'}</span>
+                    </div>
+                    <div class="slide-title">${slide.title}</div>
+                    <div class="slide-message">${slide.key_message}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('outlineLoading').classList.remove('active');
+            document.getElementById('outlineContent').style.display = 'block';
+        }
+
+        function approveOutline() {
+            state.slideSpecs = [];
+            state.currentSlideIndex = 0;
+            state.specIterations = {};
+            setStep(4);
+            generateSlideSpec();
+        }
+
+        async function reviseOutline() {
+            const feedback = prompt('What changes would you like to make to the outline?');
+            if (!feedback) return;
+
+            if (state.outlineIteration >= 5) {
+                showToast('Maximum iterations reached', 'warning');
+                return;
+            }
+
+            const loading = document.getElementById('outlineLoading');
+            const content = document.getElementById('outlineContent');
+
+            loading.classList.add('active');
+            content.style.display = 'none';
+
+            state.outlineIteration++;
+            document.getElementById('outlineIteration').textContent = state.outlineIteration;
+
+            const systemPrompt = `You are revising a slide deck outline based on user feedback.
+Maintain the same JSON structure.`;
+
+            const userPrompt = `Current outline:\n${JSON.stringify(state.outline, null, 2)}\n\nUser feedback: ${feedback}\n\nProvide the revised outline in the same JSON format.`;
+
+            try {
+                state.outline = await callOpenAI(systemPrompt, userPrompt, true);
+                displayOutline(state.outline);
+            } catch (error) {
+                showToast('Error revising outline: ' + error.message, 'error');
+                loading.classList.remove('active');
+                content.style.display = 'block';
+            }
+        }
+
+        // ============ STEP 4: SLIDE DESIGN ============
+        async function generateSlideSpec() {
+            const slides = state.outline?.slides || [];
+
+            if (state.currentSlideIndex >= slides.length) {
+                // All slides processed
+                setStep(5);
+                displayExportSummary();
+                return;
+            }
+
+            const loading = document.getElementById('specLoading');
+            const content = document.getElementById('specContent');
+
+            loading.classList.add('active');
+            content.style.display = 'none';
+
+            const currentSlide = slides[state.currentSlideIndex];
+            document.getElementById('slideProgress').textContent =
+                `Slide ${state.currentSlideIndex + 1} of ${slides.length}`;
+
+            // Track iterations per slide
+            const slideId = currentSlide.slide_id;
+            state.specIterations[slideId] = (state.specIterations[slideId] || 0) + 1;
+
+            const frameworksList = FRAMEWORKS.map(f =>
+                `- ${f.id}: ${f.name}\n  When to use: ${f.when}`
+            ).join('\n');
+
+            const systemPrompt = `You are a slide designer at a top-tier consulting firm.
+Design detailed slide specifications.
+
+AVAILABLE FRAMEWORKS (you MUST choose one):
+${frameworksList}
+
+You MUST respond with valid JSON:
+{
+    "slide_id": "${slideId}",
+    "title": "string",
+    "framework_id": "one of the framework IDs above",
+    "framework_name": "human readable name",
+    "rationale": "why this framework fits (1-2 sentences)",
+    "headline": "main insight statement",
+    "body": ["bullet points"],
+    "sections": [
+        {"name": "section name", "content": "content text"}
+    ],
+    "footnotes": ["optional sources"]
+}`;
+
+            const userPrompt = `Design the slide:
+- ID: ${currentSlide.slide_id}
+- Title: ${currentSlide.title}
+- Objective: ${currentSlide.objective}
+- Key Message: ${currentSlide.key_message}
+- Bullets: ${(currentSlide.bullets || []).join(', ')}
+- Suggested Framework: ${currentSlide.suggested_framework || 'choose best'}
+
+Deck context: ${state.outline.deck_title}`;
+
+            try {
+                const spec = await callOpenAI(systemPrompt, userPrompt, true);
+                state.slideSpecs[state.currentSlideIndex] = spec;
+                displaySlideSpec(spec);
+            } catch (error) {
+                showToast('Error generating spec: ' + error.message, 'error');
+                loading.classList.remove('active');
+            }
+        }
+
+        function displaySlideSpec(spec) {
+            document.getElementById('specTitle').value = spec.title || '';
+            document.getElementById('specFramework').value =
+                `${spec.framework_name || ''} (${spec.framework_id || ''})`;
+            document.getElementById('specRationale').textContent = spec.rationale || '';
+            document.getElementById('specHeadline').value = spec.headline || '';
+
+            const bodyList = document.getElementById('specBody');
+            bodyList.innerHTML = (spec.body || []).map(item => `<li>${item}</li>`).join('');
+
+            const sectionsDiv = document.getElementById('specSections');
+            sectionsDiv.innerHTML = (spec.sections || []).map(section => `
+                <div style="margin-bottom: 0.5rem; padding: 0.75rem; background: var(--bg); border-radius: 4px;">
+                    <strong>${section.name}:</strong> ${section.content}
+                </div>
+            `).join('');
+
+            document.getElementById('specLoading').classList.remove('active');
+            document.getElementById('specContent').style.display = 'block';
+        }
+
+        function approveSpec() {
+            state.currentSlideIndex++;
+            generateSlideSpec();
+        }
+
+        async function reviseSpec() {
+            const feedback = prompt('What changes would you like?');
+            if (!feedback) return;
+
+            const slideId = state.outline.slides[state.currentSlideIndex].slide_id;
+            if (state.specIterations[slideId] >= 5) {
+                showToast('Maximum iterations for this slide reached', 'warning');
+                return;
+            }
+
+            const loading = document.getElementById('specLoading');
+            const content = document.getElementById('specContent');
+
+            loading.classList.add('active');
+            content.style.display = 'none';
+
+            const currentSpec = state.slideSpecs[state.currentSlideIndex];
+
+            const systemPrompt = `Revise the slide specification based on feedback. Keep the same JSON format.`;
+            const userPrompt = `Current spec:\n${JSON.stringify(currentSpec, null, 2)}\n\nFeedback: ${feedback}`;
+
+            try {
+                const spec = await callOpenAI(systemPrompt, userPrompt, true);
+                state.slideSpecs[state.currentSlideIndex] = spec;
+                state.specIterations[slideId]++;
+                displaySlideSpec(spec);
+            } catch (error) {
+                showToast('Error revising spec: ' + error.message, 'error');
+                loading.classList.remove('active');
+                content.style.display = 'block';
+            }
+        }
+
+        function skipSlide() {
+            state.currentSlideIndex++;
+            generateSlideSpec();
+        }
+
+        // ============ STEP 5: EXPORT ============
+        function displayExportSummary() {
+            const total = state.outline?.slides?.length || 0;
+            const approved = state.slideSpecs.filter(s => s).length;
+
+            document.getElementById('totalSlides').textContent = total;
+            document.getElementById('approvedSlides').textContent = approved;
+        }
+
+        async function exportPPTX() {
+            const author = document.getElementById('authorName').value || 'Slide Creator';
+
+            try {
+                // Create presentation
+                const pptx = new PptxGenJS();
+
+                // Set properties
+                pptx.author = author;
+                pptx.title = state.outline?.deck_title || 'Presentation';
+                pptx.subject = 'Generated by Slide Creator';
+                pptx.company = 'Slide Creator';
+
+                // Define colors
+                const colors = {
+                    primary: '1a73e8',
+                    secondary: '34a853',
+                    text: '202124',
+                    textLight: '5f6368',
+                    background: 'ffffff'
+                };
+
+                // Add title slide
+                let slide = pptx.addSlide();
+                slide.addText(state.outline?.deck_title || 'Presentation', {
+                    x: 0.5, y: 2.5, w: '90%', h: 1,
+                    fontSize: 36, bold: true, color: colors.text,
+                    align: 'center'
+                });
+                slide.addText(`By ${author} | ${new Date().toLocaleDateString()}`, {
+                    x: 0.5, y: 4, w: '90%', h: 0.5,
+                    fontSize: 14, color: colors.textLight,
+                    align: 'center'
+                });
+
+                // Add content slides
+                for (const spec of state.slideSpecs) {
+                    if (!spec) continue;
+
+                    slide = pptx.addSlide();
+
+                    // Title
+                    slide.addText(spec.title || '', {
+                        x: 0.5, y: 0.3, w: '90%', h: 0.6,
+                        fontSize: 24, bold: true, color: colors.text
+                    });
+
+                    // Framework badge
+                    slide.addText(spec.framework_name || '', {
+                        x: 8, y: 0.3, w: 1.5, h: 0.3,
+                        fontSize: 8, color: colors.primary,
+                        align: 'right'
+                    });
+
+                    // Headline
+                    slide.addText(spec.headline || '', {
+                        x: 0.5, y: 1, w: '90%', h: 0.5,
+                        fontSize: 16, bold: true, color: colors.primary
+                    });
+
+                    // Body bullets
+                    const body = spec.body || [];
+                    if (body.length > 0) {
+                        slide.addText(
+                            body.map(item => ({ text: item, options: { bullet: true } })),
+                            {
+                                x: 0.5, y: 1.7, w: '90%', h: 2.5,
+                                fontSize: 14, color: colors.text,
+                                valign: 'top'
+                            }
+                        );
+                    }
+
+                    // Sections (framework content)
+                    const sections = spec.sections || [];
+                    if (sections.length > 0) {
+                        const sectionWidth = 8.5 / sections.length;
+                        sections.forEach((section, idx) => {
+                            slide.addShape(pptx.ShapeType.roundRect, {
+                                x: 0.5 + (idx * sectionWidth) + (idx * 0.1),
+                                y: 4.2,
+                                w: sectionWidth - 0.1,
+                                h: 1.5,
+                                fill: { color: 'f8f9fa' },
+                                line: { color: colors.primary, width: 1 }
+                            });
+                            slide.addText(section.name || '', {
+                                x: 0.5 + (idx * sectionWidth) + (idx * 0.1),
+                                y: 4.3,
+                                w: sectionWidth - 0.1,
+                                h: 0.4,
+                                fontSize: 10, bold: true, color: colors.text,
+                                align: 'center'
+                            });
+                            slide.addText(section.content || '', {
+                                x: 0.6 + (idx * sectionWidth) + (idx * 0.1),
+                                y: 4.7,
+                                w: sectionWidth - 0.3,
+                                h: 0.9,
+                                fontSize: 9, color: colors.textLight,
+                                align: 'center', valign: 'top'
+                            });
+                        });
+                    }
+
+                    // Footnotes
+                    const footnotes = spec.footnotes || [];
+                    if (footnotes.length > 0) {
+                        slide.addText(footnotes.join(' | '), {
+                            x: 0.5, y: 5.3, w: '90%', h: 0.3,
+                            fontSize: 8, color: colors.textLight
+                        });
+                    }
+                }
+
+                // Save file
+                const filename = `${state.outline?.deck_title || 'presentation'}_${Date.now()}.pptx`;
+                await pptx.writeFile({ fileName: filename });
+
+                showToast('Presentation downloaded successfully!', 'success');
+
+            } catch (error) {
+                console.error('Export error:', error);
+                showToast('Error exporting: ' + error.message, 'error');
+            }
+        }
+
+        function startOver() {
+            // Reset state
+            state.currentStep = 1;
+            state.storyline = '';
+            state.review = null;
+            state.reviewIteration = 0;
+            state.outline = null;
+            state.outlineIteration = 0;
+            state.slideSpecs = [];
+            state.currentSlideIndex = 0;
+            state.specIterations = {};
+
+            // Reset form
+            document.getElementById('storyline').value = '';
+            document.getElementById('targetAudience').value = '';
+            document.getElementById('duration').value = '';
+            document.getElementById('tone').value = '';
+            document.getElementById('brandConstraints').value = '';
+
+            setStep(1);
+        }
+
+        // ============ TOAST NOTIFICATIONS ============
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
